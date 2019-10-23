@@ -1,6 +1,9 @@
 package com.bruno.costa.cursomc.resources;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.bruno.costa.cursomc.domain.Categoria;
+import com.bruno.costa.cursomc.dto.CategoriaDTO;
 import com.bruno.costa.cursomc.services.CategoriaService;
 
 @RestController
@@ -23,12 +27,8 @@ public class CategoriaResource {
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<?> findById(@PathVariable Long id) {
-		
-		Categoria obj;
-		obj = service.findById(id);
-
-		return ResponseEntity.ok(obj);
-		
+		Categoria entidade = service.findById(id);
+		return ResponseEntity.ok(entidade);
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
@@ -49,6 +49,13 @@ public class CategoriaResource {
 	public ResponseEntity<Void> delete(@PathVariable Long id){
 		service.deleteById(id);
 		return ResponseEntity.noContent().build();
+	}
+	
+	@RequestMapping(method = RequestMethod.GET)
+	public ResponseEntity<List<CategoriaDTO>> findAll() {
+		List<Categoria> list = service.findAll();
+		List<CategoriaDTO> listDTO = list.stream().map(entidade -> new CategoriaDTO(entidade)).collect(Collectors.toList());
+		return ResponseEntity.ok(listDTO);
 	}
 }
 
