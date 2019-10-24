@@ -1,16 +1,17 @@
 package com.bruno.costa.cursomc.resources;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -55,6 +56,19 @@ public class CategoriaResource {
 	public ResponseEntity<List<CategoriaDTO>> findAll() {
 		List<Categoria> list = service.findAll();
 		List<CategoriaDTO> listDTO = list.stream().map(entidade -> new CategoriaDTO(entidade)).collect(Collectors.toList());
+		return ResponseEntity.ok(listDTO);
+	}
+	
+	@RequestMapping(value = "/page", method = RequestMethod.GET)
+	public ResponseEntity<Page<CategoriaDTO>> findPerPage(
+			@RequestParam(value = "page", defaultValue = "0") Integer page, 
+			@RequestParam(value = "linePerPage", defaultValue = "24") Integer linePerPage, 
+			@RequestParam(value = "direction", defaultValue = "ASC") String direction, 
+			@RequestParam(value = "orderBy", defaultValue = "nome") String orderBy) {
+		
+		Page<Categoria> list = service.findPage(page, linePerPage, direction, orderBy);
+		Page<CategoriaDTO> listDTO = list.map(entidade -> new CategoriaDTO(entidade));
+		
 		return ResponseEntity.ok(listDTO);
 	}
 }
