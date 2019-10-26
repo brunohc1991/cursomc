@@ -10,9 +10,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
+import com.bruno.costa.cursomc.domain.Cidade;
 import com.bruno.costa.cursomc.domain.Cliente;
+import com.bruno.costa.cursomc.domain.Endereco;
+import com.bruno.costa.cursomc.domain.enums.TipoCliente;
 import com.bruno.costa.cursomc.dto.ClienteDTO;
+import com.bruno.costa.cursomc.dto.ClienteNewDTO;
 import com.bruno.costa.cursomc.repositories.ClienteRepository;
+import com.bruno.costa.cursomc.repositories.EnderecoRepository;
 import com.bruno.costa.cursomc.services.exception.DataIntegrityException;
 import com.bruno.costa.cursomc.services.exception.ObjectNotFoundException;
 
@@ -20,7 +25,10 @@ import com.bruno.costa.cursomc.services.exception.ObjectNotFoundException;
 public class ClienteService {
 
 	@Autowired
-	ClienteRepository repo;
+	private ClienteRepository repo;
+	
+	@Autowired
+	private EnderecoRepository enderecoRepo;
 	
 	public Cliente findById(Long id){
 		Optional<Cliente> obj = repo.findById(id);
@@ -55,8 +63,34 @@ public class ClienteService {
 		return new Cliente(dto.getId(), dto.getNome(), dto.getEmail(), null, null);
 	}
 	
+	public Cliente fromDto(ClienteNewDTO dto) {
+		Cliente cli = new Cliente(null, dto.getNome(), dto.getEmail(), dto.getCpfCnpj(), TipoCliente.toEnum(dto.getTipo()));
+		Cidade cid = new Cidade(dto.getCidadeId(), null, null);
+		Endereco end = new Endereco(null, dto.getLogradouro(), dto.getNumero(), dto.getComplemento(), dto.getBairro(), dto.getCep(), cli, cid);
+		cli.getEnderecos().add(end);
+		cli.getTelefones().add(dto.getTelefone1());
+		
+		if(dto.getTelefone2() != null) {
+			cli.getTelefones().add(dto.getTelefone2());
+		}
+		if(dto.getTelefone3() != null) {
+			cli.getTelefones().add(dto.getTelefone3());
+		}
+		
+		return cli;
+	}
+	
 	private void uddateData(Cliente newEntidade, Cliente entidade) {
 		newEntidade.setNome(entidade.getNome());
 		newEntidade.setEmail(entidade.getEmail());
 	}
+	
+	public Cliente insert(Cliente entidade) {
+		entidade.setId(null);
+		entidade = repo.save(entidade);
+		enderecoRepo.saveAll(entidade.getEnderecos());
+		return entidade;
+	}
+	
+	
 }
