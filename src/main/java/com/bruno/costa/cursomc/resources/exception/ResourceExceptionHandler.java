@@ -1,7 +1,5 @@
 package com.bruno.costa.cursomc.resources.exception;
 
-import java.util.Arrays;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
