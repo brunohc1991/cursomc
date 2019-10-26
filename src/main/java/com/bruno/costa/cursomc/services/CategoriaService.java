@@ -33,10 +33,11 @@ public class CategoriaService {
 	}
 
 	public Categoria update(Categoria entidade) {
-		findById(entidade.getId());
-		return repo.save(entidade);
+		Categoria newEntidade = findById(entidade.getId());
+		uddateData(newEntidade, entidade);
+		return repo.save(newEntidade);
 	}
-	
+
 	public void deleteById(Long id) {
 		findById(id);
 		try {
@@ -59,4 +60,8 @@ public class CategoriaService {
 		return new Categoria(dto.getId(), dto.getNome());
 	}
 	
+
+	private void uddateData(Categoria newEntidade, Categoria entidade) {
+		newEntidade.setNome(entidade.getNome());
+	}
 }
