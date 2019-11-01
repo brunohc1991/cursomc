@@ -2,40 +2,43 @@ package com.bruno.costa.cursomc.services.validation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.servlet.HandlerMapping;
 
+import com.bruno.costa.cursomc.domain.Cliente;
 import com.bruno.costa.cursomc.domain.enums.TipoCliente;
-import com.bruno.costa.cursomc.dto.ClienteNewDTO;
+import com.bruno.costa.cursomc.dto.ClienteDTO;
 import com.bruno.costa.cursomc.repositories.ClienteRepository;
 import com.bruno.costa.cursomc.resources.exception.FieldMessage;
 import com.bruno.costa.cursomc.services.validation.utils.BR;
 
-public class ClienteInsertValidator implements ConstraintValidator<ClienteInsert, ClienteNewDTO> {
+public class ClienteUpdateValidator implements ConstraintValidator<ClienteUpdate, ClienteDTO> {
 	@Override
-	public void initialize(ClienteInsert ann) {}
+	public void initialize(ClienteUpdate ann) {}
 
+	@Autowired
+	private HttpServletRequest request;
+	
 	@Autowired
 	private ClienteRepository repository;
 	
 	@Override
-	public boolean isValid(ClienteNewDTO objDto, ConstraintValidatorContext context) {
+	public boolean isValid(ClienteDTO objDto, ConstraintValidatorContext context) {
 		List<FieldMessage> list = new ArrayList<>();
 
-		// inclua os testes aqui, inserindo erros na lista
+		@SuppressWarnings("unchecked")
+		Map<String, String> map = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+		Long id = Long.valueOf(map.get("id"));
 		
-		if(TipoCliente.PESSOA_FISICA.getCod() == objDto.getTipo() && !BR.isValidCPF(objDto.getCpfOuCnpj())) {
-			list.add(new FieldMessage("cpfOuCnpj", "CPF Inválido"));
-		}
+		Cliente aux = repository.findByEmail(objDto.getEmail()); 
 		
-		if(TipoCliente.PESSOA_JURIDICA.getCod() == objDto.getTipo() && !BR.isValidCNPJ(objDto.getCpfOuCnpj())) {
-			list.add(new FieldMessage("cpfOuCnpj", "CNPJ Inválido"));
-		}
-		
-		if(repository.findByEmail(objDto.getEmail()) != null) {
+		if(aux != null && aux.getId().longValue() != id.longValue()) {
 			list.add(new FieldMessage("email", "O e-mail informado já esta cadastrado."));
 		}
 
